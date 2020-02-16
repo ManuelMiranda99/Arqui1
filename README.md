@@ -1,9 +1,9 @@
 # Proyectos Arqui 1
-## Universidad de San Carlos de Guatemala
-## Facultad de Ingenieria
-## Escuela de Ciencias y Sistemas
-## Arquitectura de Computadores y Ensambladores 1
-## Primer Semestre 2020
+**Universidad de San Carlos de Guatemala**
+**Facultad de Ingenieria**
+**Escuela de Ciencias y Sistemas**
+**Arquitectura de Computadores y Ensambladores 1**
+**Primer Semestre 2020**
 ### Grupo 12
 #### Integrantes:
 | Nombre:                       | Carnet:   |
