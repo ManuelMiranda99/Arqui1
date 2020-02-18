@@ -31,8 +31,6 @@
 #define S3 3
 #define S4 4
 #define SOut 5
-
-
 /*
   ------------------------------Fin de pines usados-------------------------------
 */
@@ -49,11 +47,136 @@ int azul=0;
 
 // Lugar de objetos y variables necesarias para los motores \>:V/
 Servo servo;
-//LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
+LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
 /*
   ------------------------------Fin de variables----------------------------------
 */
+/*
+  ------------------------------Arreglos para LCD---------------------------------
+*/
+byte abrirEx[] = {    // !
+  0b00000000,
+  0b00001100,
+  0b00001100,
+  0b00001100,
+  0b00001100,
+  0b00000000,
+  0b00001100,
+  0b00001100
+};
 
+byte cerrarEx[] = {   // ¡
+  0b00001100,
+  0b00001100,
+  0b00000000,
+  0b00001100,
+  0b00001100,
+  0b00001100,
+  0b00001100,
+  0b00000000
+}
+
+byte aster[] = {   // *
+  0b00000000,
+  0b00000000,
+  0b00010101,
+  0b00001110,
+  0b00001110,
+  0b00010101,
+  0b00000000,
+  0b00000000
+}
+
+byte numeral[] = {   // #
+  0b00000000,
+  0b00001010,
+  0b00001010,
+  0b00011111,
+  0b00001010,
+  0b00011111,
+  0b00001010,
+  0b00000000
+}
+
+byte guion[] = {   // -
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00011111,
+  0b00011111,
+  0b00000000,
+  0b00000000,
+  0b00000000
+}
+
+byte o[] = {   // |
+  0b00000100,
+  0b00000100,
+  0b00000100,
+  0b00000100,
+  0b00000100,
+  0b00000100,
+  0b00000100,
+  0b00000100
+}
+
+byte feliz[] = {   // :)
+  0b00000100,
+  0b00000010,
+  0b00001001,
+  0b00000001,
+  0b00000001,
+  0b00001001,
+  0b00000010,
+  0b00000100
+}
+
+byte pregunta[] = { // ¿
+  0b00000000,
+  0b00000100,
+  0b00000000,
+  0b00000100,
+  0b00001000,
+  0b00010000,
+  0b00001001,
+  0b00000110
+}
+
+byte dosPuntos[] = {  // :
+  0b00000000,
+  0b00001100,
+  0b00001100,
+  0b00000000,
+  0b00000000,
+  0b00001100,
+  0b00001100,
+  0b00000000
+}
+
+byte dolar[] = {  //  $
+  0b00000100,
+  0b00001111,
+  0b00010100,
+  0b00010100,
+  0b00001110,
+  0b00000101,
+  0b00000101,
+  0b00011110
+}
+
+byte amper[] = {  //  &
+  0b00000100,
+  0b00001010,
+  0b00010001,
+  0b00010010,
+  0b00001101,
+  0b00001110,
+  0b00010110,
+  0b00001001
+}
+/*
+  ------------------------------Fin arreglos para LCD-----------------------------
+*/
 /*
 Meter código para mover el motor y validaciones de tamaño y color. Junto con la validación
 de tamaño debe de verificar si esta pasando un producto o no.
@@ -130,12 +253,12 @@ void setup() {
   digitalWrite(TRIGGERUS, LOW);
 
   // Setup de Servo
-//  servo.attach(SERVOPIN);
+  //servo.attach(SERVOPIN);
   // Mover servo a posición de Recipiente 1
   moverServo(90);
 
-  // Setup de LCD
- // lcd.begin(16, 2);
+ // Setup de LCD
+ //lcd.begin(16, 2);
 
  //Setup del sensor de color
  pinMode(S1,OUTPUT);
@@ -143,6 +266,19 @@ void setup() {
  pinMode(S3,OUTPUT);
  pinMode(S4,OUTPUT);
  pinMode(SOut,INPUT);
+
+ // Creación de caracteres especiales LCD
+ lcd.createChar(0,abrirEx);               // !
+ lcd.createChar(1,cerrarEx);              // ¡
+ lcd.createChar(2, aster);                // *
+ lcd.createChar(3, numeral);              // #
+ lcd.createChar(4, guion);                // -
+ lcd.createChar(5, o);                    // |
+ lcd.createChar(6, feliz);                // :)
+ lcd.createChar(7, pregunta);             // ¿
+ lcd.createChar(8, dosPuntos);            // :
+ lcd.createChar(9, dolar);                // $
+ lcd.createChar(10, amper);               // &
 
  digitalWrite(S1,HIGH);
  digitalWrite(S2,HIGH);
