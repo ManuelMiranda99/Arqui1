@@ -61,9 +61,25 @@ int rojo=0;
 int verde=0;
 int azul=0;
 
-int REC1=0;
-int REC2=90;
-int REC3=180;
+// Lugar de objetos y variables necesarias para los motores \>:V/
+Servo servo;
+LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
+/*
+  ------------------------------Fin de variables----------------------------------
+*/
+/*
+  ------------------------------Arreglos para LCD---------------------------------
+*/
+byte abrirEx[] = {    // !
+  0b00000000,
+  0b00001100,
+  0b00001100,
+  0b00001100,
+  0b00001100,
+  0b00000000,
+  0b00001100,
+  0b00001100
+};
 
 byte pregunta[] = { // ¿
   B00000000,
@@ -102,12 +118,9 @@ Servo servo;
   ------------------------------Fin de variables----------------------------------
 */
 
-/*
-Meter código para mover el motor y validaciones de tamaño y color. Junto con la validación
-de tamaño debe de verificar si esta pasando un producto o no.
-*/
 void transportar(){
  
+
     
 }
 
@@ -131,6 +144,19 @@ void msg2(){
   lcd.print(" :)");
  
   }
+
+  //¿: G12 - Recipiente X - Y Productos $&
+void msg3(int _r, int _c){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.write(0);
+  lcd.print(": G12 - Recipiente");
+  lcd.print(_r);
+  lcd.setCursor(0,1);
+  lcd.print(_c);
+  lcd.print(" Productos $&");
+  delay(60000);
+}
 
 //Metodo para calcular tamaño
 void detectarDistancia(){
@@ -328,21 +354,12 @@ void loop() {
        calculoGrados(color,tamanio);
        delay(3000);
        moverServo(grados);
-       
     }
   }else{
     msg1();
     digitalWrite(MOTOR,LOW);
   }
-
-    
-
-   
-
-      
      delay(100);
- 
-
 }
 
 
