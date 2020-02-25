@@ -70,14 +70,14 @@ bool modoAutomatico = true;
 /*
   --------------------Movimiento--------------------
 */
-void adelante(){
+void adelante(int cDelay){
   // Encendido
   digitalWrite(MT1P1, HIGH);
   digitalWrite(MT1P2, LOW);
   digitalWrite(MT2P1, HIGH);
   digitalWrite(MT2P2, LOW);
 
-  delay(500);
+  delay(cDelay);
 
   // Apagado
   digitalWrite(MT1P1, LOW);
@@ -86,14 +86,14 @@ void adelante(){
   digitalWrite(MT2P2, LOW);
 }
 
-void atras(){
+void atras(int cDelay){
   // Encendido
   digitalWrite(MT1P1, LOW);
   digitalWrite(MT1P2, HIGH);
   digitalWrite(MT2P1, LOW);
   digitalWrite(MT2P2, HIGH);
 
-  delay(500);
+  delay(cDelay);
 
   // Apagado
   digitalWrite(MT1P1, LOW);
@@ -102,14 +102,14 @@ void atras(){
   digitalWrite(MT2P2, LOW);
 }
 
-void derecha(){
+void derecha(int cDelay){
   // Encendido
   digitalWrite(MT1P1, HIGH);
   digitalWrite(MT1P2, LOW);
   digitalWrite(MT2P1, LOW);
   digitalWrite(MT2P2, LOW);
 
-  delay(500);
+  delay(cDelay);
 
   // Apagado
   digitalWrite(MT1P1, LOW);
@@ -118,14 +118,14 @@ void derecha(){
   digitalWrite(MT2P2, LOW);
 }
 
-void izquierda(){
+void izquierda(int cDelay){
   // Encendido
   digitalWrite(MT1P1, LOW);
   digitalWrite(MT1P2, LOW);
   digitalWrite(MT2P1, HIGH);
   digitalWrite(MT2P2, LOW);
 
-  delay(500);
+  delay(cDelay);
 
   // Apagado
   digitalWrite(MT1P1, LOW);
@@ -134,25 +134,25 @@ void izquierda(){
   digitalWrite(MT2P2, LOW);
 }
 
-void barrer(){
+void barrer(int cDelay){
   // Encendido
   digitalWrite(MTBP1, HIGH);
   digitalWrite(MTBP2, LOW);
 
-  delay(500);
+  delay(cDelay);
 
   // Apagado
   digitalWrite(MTBP1, LOW);
   digitalWrite(MTBP2, LOW);
 }
 
-void retroceder(){
+void retroceder(int cDelay){
   digitalWrite(MT1P1, LOW);
   digitalWrite(MT1P2, HIGH);
   digitalWrite(MT2P1, LOW);
   digitalWrite(MT2P2, HIGH);
 
-  delay(500);
+  delay(cDelay);
   
   digitalWrite(MT1P1, LOW);
   digitalWrite(MT1P2, LOW);
