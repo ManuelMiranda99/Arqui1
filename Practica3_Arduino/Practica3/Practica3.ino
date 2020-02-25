@@ -26,15 +26,19 @@
 
 // Motores del carro
 // Motor 1
-#define MT1P1 10
-#define MT1P2 11
+#define MT1P1 9
+#define MT1P2 10
 
 // Motor 2
-#define MT2P1 12
-#define MT2P2 13
+#define MT2P1 11
+#define MT2P2 12
+
+// Motor Barrido
+#define MTBP1 13
+#define MTBP2 14
 
 // Boton manual
-#define INICIO 48
+#define INICIO 15
 
 /*
   ------------------------------Fin de pines usados-------------------------------
@@ -67,27 +71,93 @@ bool modoAutomatico = true;
   --------------------Movimiento--------------------
 */
 void adelante(){
-  
+  // Encendido
+  digitalWrite(MT1P1, HIGH);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, HIGH);
+  digitalWrite(MT2P2, LOW);
+
+  delay(500);
+
+  // Apagado
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, LOW);
 }
 
 void atras(){
-  
+  // Encendido
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, HIGH);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, HIGH);
+
+  delay(500);
+
+  // Apagado
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, LOW);
 }
 
 void derecha(){
-  
+  // Encendido
+  digitalWrite(MT1P1, HIGH);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, LOW);
+
+  delay(500);
+
+  // Apagado
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, LOW);
 }
 
 void izquierda(){
-  
+  // Encendido
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, HIGH);
+  digitalWrite(MT2P2, LOW);
+
+  delay(500);
+
+  // Apagado
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, LOW);
 }
 
 void barrer(){
-  
+  // Encendido
+  digitalWrite(MTBP1, HIGH);
+  digitalWrite(MTBP2, LOW);
+
+  delay(500);
+
+  // Apagado
+  digitalWrite(MTBP1, LOW);
+  digitalWrite(MTBP2, LOW);
 }
 
 void retroceder(){
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, HIGH);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, HIGH);
+
+  delay(500);
   
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, LOW);
 }
 
 /*
@@ -198,10 +268,6 @@ void loopAutomatico(){
     }
     
   }
-
-  if(digitalRead(INICIO == HIGH)){
-    modoAutomatico = !modoAutomatico;
-  }
 }
 
 void loopManual(){
@@ -255,32 +321,50 @@ void setup() {
 
 void loop() {
 
+  if(digitalRead(INICIO == HIGH)){
+    modoAutomatico = !modoAutomatico;
+  }
+
   if(modoAutomatico){
+    
     loopAutomatico();
+  
   }else{
+    
     loopManual();
+  
   }
 
 }
 
 /*
 
-    Flujo de la aplicacion
 
--------------MODO AUTOMATICO-------------
-El robot iniciara en el modo automatico. Este debe de estar detectando objetos todo el rato.
-Debe de poder evadir por la izquierda y por la derecha. Este deberá de poder moverse solo
-dentro de los limites de la pista, considerando limite por pared o por gradas.
-En modo automatico aparte de moverse todo el rato para adelante y barrer debe de detectar 
-los siguientes colores y realizar la accion correspondiente:
-    Rojo: Barrer
-    Azul: Modo Manual
-    Negro: Retroceder y girarse
-Para cambiar al modo manual tambien se necesita de un boton en el robot.
 
--------------MODO MANUAL-------------
-Este modo solo debe de estar leyendo las salidas de la aplicacion asi como mandar a la aplicacion
-las rutas que se han guardado en el EEPROM. Tambien se le deberá de poder enviar rutas a elegir
-Tambien existira la opción limpiar rutas que borrara la memoria EEPROM del arduino.
+
+
+
+                                                                                        Flujo de la aplicacion
+                                                      
+                                                                              -------------MODO AUTOMATICO-------------
+                                                      El robot iniciara en el modo automatico. Este debe de estar detectando objetos todo el rato.
+                                                      Debe de poder evadir por la izquierda y por la derecha. Este deberá de poder moverse solo
+                                                      dentro de los limites de la pista, considerando limite por pared o por gradas.
+                                                      En modo automatico aparte de moverse todo el rato para adelante y barrer debe de detectar 
+                                                      los siguientes colores y realizar la accion correspondiente:
+                                                          Rojo: Barrer
+                                                          Azul: Modo Manual
+                                                          Negro: Retroceder y girarse
+                                                      Para cambiar al modo manual tambien se necesita de un boton en el robot.
+                                                      
+                                                                              -------------MODO MANUAL-------------
+                                                      Este modo solo debe de estar leyendo las salidas de la aplicacion asi como mandar a la aplicacion
+                                                      las rutas que se han guardado en el EEPROM. Tambien se le deberá de poder enviar rutas a elegir
+                                                      Tambien existira la opción limpiar rutas que borrara la memoria EEPROM del arduino.
+
+
+
+
+
 
 */
