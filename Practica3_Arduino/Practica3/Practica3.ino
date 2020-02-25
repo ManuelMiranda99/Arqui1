@@ -24,6 +24,15 @@
 
 #define SOut 8
 
+// Motores del carro
+// Motor 1
+#define MT1P1 10
+#define MT1P2 11
+
+// Motor 2
+#define MT2P1 12
+#define MT2P2 13
+
 // Boton manual
 #define INICIO 48
 
@@ -41,7 +50,6 @@
  *   presionen en la aplicacion:
  *      0 = ARRIBA
  *      1 = ABAJO
- *      
  *      2 = DERECHA
  *      3 = IZQUIERDA
  *      4 = BARRER
@@ -200,6 +208,43 @@ void loopManual(){
   /*
     Solo debe de detectar la accion que le envia el telefono y realizar el movimiento correspondiente
   */
+  if(Serial.available()>0){
+    state = Serial.read();
+  }
+  
+  if(state == 0){
+    for(int i = 0;i<5;i++){
+      adelante();
+    }
+  }else if(state == 1){
+    for(int i = 0;i<5;i++){
+      atras();
+    }
+  }else if(state == 2){
+    for(int i = 0;i<5;i++){
+      derecha();
+    }
+  }else if(state == 3){
+    for(int i = 0;i<5;i++){
+      izquierda();
+    }
+  }else if(state == 4){
+    for(int i = 0;i<5;i++){
+      barrer();
+    }
+  }else if(state == 5){
+    for(int i = 0;i<5;i++){
+      for (int i = 0 ; i < EEPROM.length() ; i++) {
+        EEPROM.write(i, 0);
+      }
+    }
+  }else if(state == 6){
+    for(int i = 0;i<5;i++){
+      // Guardar ruta en memoria
+    }
+  }else{
+    Serial.println("Saber ni que pedo paso, state = " + state);
+  }
 }
 
 void setup() {
