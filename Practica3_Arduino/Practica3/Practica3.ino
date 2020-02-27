@@ -215,7 +215,7 @@ int detectarColor(){
 
 bool detectarObstaculo(){
 
-  int distanciaRecorrida = 1000000;
+  int distanciaRecorrida = 10000;
   
   digitalWrite(TRIGGERUS, HIGH);
   delayMicroseconds(10);
