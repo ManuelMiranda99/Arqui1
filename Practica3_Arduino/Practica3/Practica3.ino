@@ -40,6 +40,14 @@
 // Boton manual
 #define INICIO 15
 
+// Elementos para el struct
+ 
+#define SIZEROUTES 3
+#define SIZENAME 10
+#define STEPSIZE 10
+#define TIMESIZE 10
+
+
 /*
   ------------------------------Fin de pines usados-------------------------------
 */
@@ -63,14 +71,217 @@
 int state = -1;
 bool modoAutomatico = true;
 
+
+//Modo manual
+typedef struct {
+    char nombre[SIZENAME];
+    char instrucciones[STEPSIZE];
+    int timer[TIMESIZE];
+} info;
+ 
+info R1 = {"", {'X','X','X','X','X','X','X','X','X','X'},{0,0,0,0,0,0,0,0,0,0}};
+info R2 = {"", {'X','X','X','X','X','X','X','X','X','X'},{0,0,0,0,0,0,0,0,0,0}};
+info R3 = {"", {'X','X','X','X','X','X','X','X','X','X'},{0,0,0,0,0,0,0,0,0,0}};
+
+
+ 
+info lista[SIZEROUTES] ={
+    R1,
+    R2,
+    R3
+};
+
+
+
+
+String nombre="";
+String timer="";
+
+int actual=0;
+int pos=0;
+int ID=0;
+
+
 /*
   ------------------------------Fin de variables----------------------------------
 */
 
 /*
+ * ----------------------------Buscar ruta
+ */
+
+
+int buscarRuta(String nombre){
+  char *s;
+  char param[10];
+  nombre.toCharArray(param,10);
+  for(int i=0;i<SIZEROUTES;i++){
+       s = strstr(lista[i].nombre,param); 
+     if (s != NULL){
+      return i;
+     }
+    
+    }
+  return 0;
+}
+
+/*
+ * ----------------------------Inicializar la EEPROM
+ */
+void inicializarArreglos(){
+   int direccion = 0; 
+  
+   /*
+    * En caso de ser esta la primera vez que se corre en otro Arduino, descomentar la siguiente línea:
+    * EEPROM.put(direccion, lista);
+    */
+        EEPROM.get(direccion, R1);
+        direccion += sizeof(info);
+        EEPROM.get(direccion, R2);
+        direccion += sizeof(info);
+        EEPROM.get(direccion, R3);
+        direccion += sizeof(info);
+    
+   EEPROM.put(direccion, lista);
+}
+
+/*
+ * ----------------------------Movimiento dado un arreglo especifico
+*/
+
+void recorrerEleccion(int resultado){
+  
+  for(int i=0;i<STEPSIZE;i++){
+    if(lista[resultado].instrucciones[i]!='X'){
+    char state= lista[resultado].instrucciones[i]; 
+    int timer=lista[resultado].timer[i];
+  if(state == 'N'){
+      adelante(timer);
+  }else if(state =='S'){
+      atras(timer);
+  }else if(state =='E'){
+      derecha(timer);
+
+  }else if(state =='O'){
+      izquierda(timer);
+      }    
+    } 
+}
+}
+
+/*
+ * ----------------------------Switch que determina acciones definidas por la APP
+ */
+void otrasAcciones(char entrada){
+ /* 
+  * Lectura de solicitud por bluetooth, donde:
+  *   R es envio de ruta(el nombre termina en '/', cada fila termina en ';' y sus elementos separados por ',' )
+  *   C es solicitud de recorrido de ruta
+  *   ----->agregar otra mandera para enviar con Serial.print() los titulos de las rutas
+ */
+  
+switch(actual){
+    case 0:
+      if(entrada=='R'){
+        actual=1;
+        }
+       else if(entrada=='C'){
+        actual=5;
+        }
+        else if(entrada=='S'){
+        char *s;
+        char param[10]="";
+        String envio="";
+        for(int i=0;i<3;i++){
+        s = strstr(lista[i].nombre,param); 
+        if (s != NULL){
+          envio+=lista[i].nombre;
+          if(i!=2){
+             envio+=",";
+            }
+        }
+    
+    }
+    Serial.print(envio);
+    envio="";
+       }
+    break;
+    case 1:  
+    if(entrada=='/'){
+      actual=2;
+      }
+    else{
+      nombre+=entrada;
+      } 
+    break;
+     case 2:  
+      nombre.toCharArray(lista[ID].nombre,10);
+      
+      actual=3;
+     
+    break;
+    case 3:  
+    if(entrada=='F'){
+    
+      EEPROM.put(0, lista);
+      actual=0;
+      ID++;
+      nombre="";
+      pos=0;
+      if(ID==3){
+        ID=0;
+      }
+      }
+    else{
+   
+        if(entrada==','){
+          actual=4;
+          
+        }
+        
+        lista[ID].instrucciones[pos]=entrada; 
+        lista[ID].timer[pos]=timer.toInt();
+     
+        pos++;
+      } 
+    break;
+    case 4:
+      if(entrada==';'){
+          actual=3;
+          timer="";
+          
+        }
+        else{
+        timer+=entrada;  
+          }
+    break;
+    case 5:
+     
+        if(entrada=='F'){
+          int resultado=buscarRuta(nombre);
+          recorrerEleccion(resultado);
+          actual=0;
+          nombre=""; 
+        }
+        else{
+          nombre+=entrada;
+        }
+    
+    break;    
+ 
+    }
+  
+}
+
+
+
+
+
+/*
   --------------------Movimiento--------------------
 */
 void adelante(int cDelay){
+
   // Encendido
   digitalWrite(MT1P1, HIGH);
   digitalWrite(MT1P2, LOW);
@@ -185,6 +396,7 @@ int detectarColor(){
   Serial.print(G, DEC);
   Serial.print("    ");
   Serial.print(B, DEC);
+  Serial.print("\n");
 
   // Si detecta color Rojo
   if(R < B && G > B && R < 35){
@@ -215,7 +427,8 @@ int detectarColor(){
 
 bool detectarObstaculo(){
 
-  int distanciaRecorrida = 10000;
+  //int distanciaRecorrida = 1000000;
+  long int distanciaRecorrida = 1000000;
   
   digitalWrite(TRIGGERUS, HIGH);
   delayMicroseconds(10);
@@ -223,9 +436,12 @@ bool detectarObstaculo(){
   int tiempo = pulseIn(ECHO, HIGH);
   
   distanciaRecorrida = tiempo/59;
+  Serial.println("Distancia: ");
+  Serial.print(distanciaRecorrida);
+  Serial.println();
 
   // Si detecta un obstaculo cerca
-  if(distanciaRecorrida < 7){
+  if(distanciaRecorrida < 10&&distanciaRecorrida>0){
     return true;
   }
   // Si no detecta obstaculo cerca
@@ -243,17 +459,21 @@ void loopAutomatico(){
   int colorDetectado = 0;  
 
   colorDetectado = detectarColor();
+
   // Rojo
   if(colorDetectado == 1){
-    barrer(500);
+    Serial.print("Rojo \n");
+    barrer(2000);
   }
   // Azul
   else if(colorDetectado == 2){
+    Serial.print("Azul \n");
     modoAutomatico = false;
   }
   // Negro
   else if(colorDetectado == 3){
-    retroceder(500);
+    Serial.print("Negro \n");
+    retroceder(2000);
   }
   // Ninguno
   else{
@@ -261,59 +481,66 @@ void loopAutomatico(){
     bool obstaculo = false;
 
     obstaculo = detectarObstaculo();
+
+    Serial.print(obstaculo + "\n");
+    
     if(obstaculo){
-      // Mover derecha o izquierda
+      Serial.print("Detecto obstaculo \n");
+      atras(2000);
+      derecha(2000);
     }else{
-      adelante(500);
+      Serial.print("No detecto obstaculo \n");
+      adelante(1000);
     }
     
   }
 }
 
 void loopManual(){
+  Serial.print("Entro a loop manual \n");
+  /*
+    Solo debe de detectar la accion que le envia el telefono y realizar el movimiento correspondiente
+  */
   if(Serial.available()>0){
     state = Serial.read();
   }
   
   if(state == 0){
     for(int i = 0;i<5;i++){
-      adelante(500);
+      adelante(2000);
     }
-  }
-  else if(state == 1){
+  }else if(state == 1){
     for(int i = 0;i<5;i++){
-      atras(500);
+      atras(2000);
     }
-  }
-  else if(state == 2){
+  }else if(state == 2){
     for(int i = 0;i<5;i++){
-      derecha(500);
+      derecha(2000);
     }
-  }
-  else if(state == 3){
+  }else if(state == 3){
     for(int i = 0;i<5;i++){
-      izquierda(500);
+      izquierda(2000);
     }
-  }
-  else if(state == 4){
+  }else if(state == 4){
     for(int i = 0;i<5;i++){
-      barrer(500);
+      barrer(2000);
     }
-  }
-  else if(state == 5){
+  }else if(state == 5){
     for(int i = 0;i<5;i++){
       for (int i = 0 ; i < EEPROM.length() ; i++) {
         EEPROM.write(i, 0);
       }
     }
-  }
-  else if(state == 6){
+  }else if(state == 6){
     for(int i = 0;i<5;i++){
       // Guardar ruta en memoria
     }
-  }
-  else{
-    Serial.println("Saber ni que pedo paso, state = " + state);
+  }else{
+
+    char entrada;
+    entrada=state;
+    otrasAcciones(entrada);
+    //Serial.println("Saber ni que pedo paso, state = " + state);
   }
 }
 
@@ -321,13 +548,36 @@ void setup() {
 
   Serial.begin(9600);
 
+  // Setup del Ultrasonico
+  pinMode(TRIGGERUS, OUTPUT);
+  pinMode(ECHO, INPUT);
+  digitalWrite(TRIGGERUS, LOW);
+
+  // Setup del sensor de color
+  pinMode(S1,OUTPUT);
+  pinMode(S2,OUTPUT);
+  pinMode(S3,OUTPUT);
+  pinMode(S4,OUTPUT);
+  pinMode(SOut,INPUT);
+
+  digitalWrite(S1,HIGH);
+  digitalWrite(S2,HIGH);
+
+  // Setup inicio
+  pinMode(INICIO, INPUT);
+  digitalWrite(INICIO, LOW);
+
+  // Setup para EEPROM
+  inicializarArreglos();
+
 }
+
 
 void loop() {
 
-  if(digitalRead(INICIO == HIGH)){
+  /*if(digitalRead(INICIO == HIGH)){
     modoAutomatico = !modoAutomatico;
-  }
+  }*/
 
   if(modoAutomatico){
     
@@ -342,12 +592,6 @@ void loop() {
 }
 
 /*
-
-
-
-
-
-
                                                                                         Flujo de la aplicacion
                                                       
                                                                               -------------MODO AUTOMATICO-------------
@@ -365,10 +609,4 @@ void loop() {
                                                       Este modo solo debe de estar leyendo las salidas de la aplicacion asi como mandar a la aplicacion
                                                       las rutas que se han guardado en el EEPROM. Tambien se le deberá de poder enviar rutas a elegir
                                                       Tambien existira la opción limpiar rutas que borrara la memoria EEPROM del arduino.
-
-
-
-
-
-
 */
