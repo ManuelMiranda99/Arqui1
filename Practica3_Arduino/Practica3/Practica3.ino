@@ -225,7 +225,7 @@ bool detectarObstaculo(){
   distanciaRecorrida = tiempo/59;
 
   // Si detecta un obstaculo cerca
-  if(distanciaRecorrida < 10){
+  if(distanciaRecorrida < 7){
     return true;
   }
   // Si no detecta obstaculo cerca
@@ -245,7 +245,7 @@ void loopAutomatico(){
   colorDetectado = detectarColor();
   // Rojo
   if(colorDetectado == 1){
-    barrer();
+    barrer(500);
   }
   // Azul
   else if(colorDetectado == 2){
@@ -253,7 +253,7 @@ void loopAutomatico(){
   }
   // Negro
   else if(colorDetectado == 3){
-    retroceder();
+    retroceder(500);
   }
   // Ninguno
   else{
@@ -264,51 +264,55 @@ void loopAutomatico(){
     if(obstaculo){
       // Mover derecha o izquierda
     }else{
-      adelante();
+      adelante(500);
     }
     
   }
 }
 
 void loopManual(){
-  /*
-    Solo debe de detectar la accion que le envia el telefono y realizar el movimiento correspondiente
-  */
   if(Serial.available()>0){
     state = Serial.read();
   }
   
   if(state == 0){
     for(int i = 0;i<5;i++){
-      adelante();
+      adelante(500);
     }
-  }else if(state == 1){
+  }
+  else if(state == 1){
     for(int i = 0;i<5;i++){
-      atras();
+      atras(500);
     }
-  }else if(state == 2){
+  }
+  else if(state == 2){
     for(int i = 0;i<5;i++){
-      derecha();
+      derecha(500);
     }
-  }else if(state == 3){
+  }
+  else if(state == 3){
     for(int i = 0;i<5;i++){
-      izquierda();
+      izquierda(500);
     }
-  }else if(state == 4){
+  }
+  else if(state == 4){
     for(int i = 0;i<5;i++){
-      barrer();
+      barrer(500);
     }
-  }else if(state == 5){
+  }
+  else if(state == 5){
     for(int i = 0;i<5;i++){
       for (int i = 0 ; i < EEPROM.length() ; i++) {
         EEPROM.write(i, 0);
       }
     }
-  }else if(state == 6){
+  }
+  else if(state == 6){
     for(int i = 0;i<5;i++){
       // Guardar ruta en memoria
     }
-  }else{
+  }
+  else{
     Serial.println("Saber ni que pedo paso, state = " + state);
   }
 }
