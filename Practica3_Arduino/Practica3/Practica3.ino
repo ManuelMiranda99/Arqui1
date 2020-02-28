@@ -154,11 +154,12 @@ void inicializarArreglos(){
 */
 
 void recorrerEleccion(int resultado){
-  
+  Serial.println("---------Entro a recorrerEleccion---------");
   for(int i=0;i<STEPSIZE;i++){
     if(lista[resultado].instrucciones[i]!='X'){
       char state= lista[resultado].instrucciones[i]; 
-      int timer=lista[resultado].timer[i];
+      int timer=lista[resultado].timer[i] * 1000;
+      Serial.println("Direccion: " + state + " - Tiempo: " + timer);
       if(state == 'N'){
         adelante(timer);
       }else if(state =='S'){
