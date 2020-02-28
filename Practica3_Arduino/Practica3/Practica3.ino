@@ -3,7 +3,6 @@
 */
 
 #include <EEPROM.h>
-#include <SoftwareSerial.h>
 
 /*
   ------------------------------Fin de librerias---------------------------------
@@ -69,7 +68,7 @@
  *      5 = LIMPIAR MEMORIA
  *      6 = GUARDAR MEMORIA
  */
-bool modoAutomatico = true;
+bool modoAutomatico = false;
 
 
 //Modo manual
@@ -102,9 +101,6 @@ int pos=0;
 int ID=0;
 
 bool entraSwitch = false;
-
-SoftwareSerial BT(0,1);
-
 
 /*
   ------------------------------Fin de variables----------------------------------
@@ -159,7 +155,11 @@ void recorrerEleccion(int resultado){
     if(lista[resultado].instrucciones[i]!='X'){
       char state= lista[resultado].instrucciones[i]; 
       int timer=lista[resultado].timer[i] * 1000;
-      Serial.println("Direccion: " + state + " - Tiempo: " + timer);
+      Serial.print("Direccion: ");
+      Serial.print(state);
+      Serial.print(" - Tiempo: ");
+      Serial.print(timer);
+      Serial.print("\n");
       if(state == 'N'){
         adelante(timer);
       }else if(state =='S'){
@@ -206,10 +206,10 @@ switch(actual){
           }
         }    
       }
-      delay(10000);
-      Serial.println(envio);
-      delay(4000);
-      Serial.print(envio);
+      for(int i = 0;i<100;i++){
+        Serial.println(envio);
+        delay(300);
+      }
       envio="";
     }
   break;
@@ -241,7 +241,7 @@ switch(actual){
     }
     else{
       if(entrada==','){
-        actual=4
+        actual=4;
       }else{
         lista[ID].instrucciones[pos] = entrada;
       }
@@ -266,7 +266,8 @@ switch(actual){
   case 5:
        
     if(entrada=='F'){
-      int resultado=buscarRuta(nombre);
+      int resultado=nombre.toInt();
+      Serial.println("Resultado: " + resultado);
       recorrerEleccion(resultado);
       actual=0;
       nombre=""; 
@@ -399,7 +400,6 @@ int detectarColor(){
   digitalWrite(S2, HIGH);
   G = pulseIn(SOut, digitalRead(SOut) == HIGH ? LOW : HIGH);
 
-/*
   Serial.print("    ");
   Serial.print(R, DEC);
   Serial.print("    ");
@@ -407,7 +407,7 @@ int detectarColor(){
   Serial.print("    ");
   Serial.print(B, DEC);
   Serial.print("\n");
-*/
+
   // Si detecta color Rojo
   if(R>38&&R<45){
     // Serial.println("Rojo");
@@ -481,7 +481,7 @@ void loopAutomatico(){
   }
   // Azul
   else if(colorDetectado == 2){
-    // Serial.print("Azul \n");
+    Serial.print("Azul \n");
     modoAutomatico = false;
   }
   // Negro
@@ -513,43 +513,54 @@ void loopAutomatico(){
 void loopManual(){
   int resultado;
   char state;
-  // Serial.print("Entro a loop manual \n");
+ // Serial.print("Entro a loop manual \n");
   /*
     Solo debe de detectar la accion que le envia el telefono y realizar el movimiento correspondiente
   */
   if(Serial.available()>0){
-    resultado = Serial.read();
-    state = Serial.read();
-    Serial.println("Resultado: " + state);
-
-    if(!entraSwitch){
-      if(state == 0){
-        adelante(2000);
-      }else if(state == '1'){
-        atras(2000);
-      }else if(state == '2'){
-        derecha(2000);
-      }else if(state == '3'){
-        izquierda(2000);
-      }else if(state == '4'){
-        barrer(2000);
-      }else if(state == '5'){
-        for (int i = 0 ; i < EEPROM.length() ; i++) {
-          EEPROM.write(i, 0);
-        }
-      }else{
-        Serial.println("Entro a otras acciones");
-        entraSwitch = true;
-        otrasAcciones(state)
-      }
-    }else{
-      Serial.println("Entro a otras acciones");
-      Serial.println("Actual: " + actual);
-      otrasAcciones(state);
-    }
+    resultado= Serial.read();
+    state=resultado;
+    Serial.print("Resutlado: ");
+    Serial.println(state);
+if(!entraSwitch){
+  if(state == '0'){
+      adelante(2000);
     
+  }else if(state == '1'){
+    
+      atras(2000);
+    
+  }else if(state == '2'){
+      derecha(2000);
+    
+  }else if(state == '3'){
+      izquierda(2000);
+  }else if(state == '4'){
+      barrer(2000);
+   
+  }else if(state == '5'){
+    for (int i = 0 ; i < EEPROM.length() ; i++) {
+      EEPROM.write(i, 0);
+    }
+  }else if(state == '6'){
+    for(int i = 0;i<5;i++){
+      // Guardar ruta en memoria
+    }
+  }else{
+    Serial.println("Entro a otras acciones");
+    entraSwitch=true;
+    otrasAcciones(state);
+
   }
-  
+
+}
+ else{
+    Serial.println("Entro a otras acciones");
+    Serial.print("Actual: ");
+    Serial.println(actual);
+    otrasAcciones(state);
+  }
+ }
 }
 
 void setup() {
