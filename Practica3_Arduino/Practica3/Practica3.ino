@@ -3,6 +3,7 @@
 */
 
 #include <EEPROM.h>
+#include <SoftwareSerial.h>
 
 /*
   ------------------------------Fin de librerias---------------------------------
@@ -68,7 +69,6 @@
  *      5 = LIMPIAR MEMORIA
  *      6 = GUARDAR MEMORIA
  */
-int state = -1;
 bool modoAutomatico = true;
 
 
@@ -100,6 +100,10 @@ String timer="";
 int actual=0;
 int pos=0;
 int ID=0;
+
+bool entraSwitch = false;
+
+SoftwareSerial BT(0,1);
 
 
 /*
@@ -153,20 +157,19 @@ void recorrerEleccion(int resultado){
   
   for(int i=0;i<STEPSIZE;i++){
     if(lista[resultado].instrucciones[i]!='X'){
-    char state= lista[resultado].instrucciones[i]; 
-    int timer=lista[resultado].timer[i];
-  if(state == 'N'){
-      adelante(timer);
-  }else if(state =='S'){
-      atras(timer);
-  }else if(state =='E'){
-      derecha(timer);
-
-  }else if(state =='O'){
-      izquierda(timer);
+      char state= lista[resultado].instrucciones[i]; 
+      int timer=lista[resultado].timer[i];
+      if(state == 'N'){
+        adelante(timer);
+      }else if(state =='S'){
+        atras(timer);
+      }else if(state =='E'){
+        derecha(timer);
+      }else if(state =='O'){
+        izquierda(timer);
       }    
     } 
-}
+  }
 }
 
 /*
@@ -181,95 +184,100 @@ void otrasAcciones(char entrada){
  */
   
 switch(actual){
-    case 0:
-      if(entrada=='R'){
-        actual=1;
-        }
-       else if(entrada=='C'){
-        actual=5;
-        }
-        else if(entrada=='S'){
-        char *s;
-        char param[10]="";
-        String envio="";
-        for(int i=0;i<3;i++){
+  case 0:
+    if(entrada=='R'){
+      actual=1;
+    }
+    else if(entrada=='C'){
+      actual=5;
+    }
+    else if(entrada=='S'){
+      entraSwitch=false;
+      char *s;
+      char param[10]="";
+      String envio="";
+      for(int i=0;i<3;i++){
         s = strstr(lista[i].nombre,param); 
-        if (s != NULL){
+        if(s != NULL){
           envio+=lista[i].nombre;
           if(i!=2){
-             envio+=",";
-            }
-        }
-    
+            envio+=",";
+          }
+        }    
+      }
+      delay(10000);
+      Serial.println(envio);
+      delay(4000);
+      Serial.print(envio);
+      envio="";
     }
-    Serial.print(envio);
-    envio="";
-       }
-    break;
-    case 1:  
+  break;
+  
+  case 1:  
     if(entrada=='/'){
       actual=2;
-      }
+    }
     else{
       nombre+=entrada;
-      } 
+    } 
     break;
-     case 2:  
-      nombre.toCharArray(lista[ID].nombre,10);
-      
-      actual=3;
-     
+  case 2:  
+    nombre.toCharArray(lista[ID].nombre,10);
+    actual=3;
     break;
-    case 3:  
+  case 3:
     if(entrada=='F'){
-    
+      Serial.print("FIN");
       EEPROM.put(0, lista);
       actual=0;
       ID++;
       nombre="";
       pos=0;
+      entraSwitch=false;
       if(ID==3){
         ID=0;
       }
-      }
-    else{
-   
-        if(entrada==','){
-          actual=4;
-          
-        }
-        
-        lista[ID].instrucciones[pos]=entrada; 
-        lista[ID].timer[pos]=timer.toInt();
-     
-        pos++;
-      } 
-    break;
-    case 4:
-      if(entrada==';'){
-          actual=3;
-          timer="";
-          
-        }
-        else{
-        timer+=entrada;  
-          }
-    break;
-    case 5:
-     
-        if(entrada=='F'){
-          int resultado=buscarRuta(nombre);
-          recorrerEleccion(resultado);
-          actual=0;
-          nombre=""; 
-        }
-        else{
-          nombre+=entrada;
-        }
-    
-    break;    
- 
     }
+    else{
+      if(entrada==','){
+        actual=4
+      }else{
+        lista[ID].instrucciones[pos] = entrada;
+      }
+      /*lista[ID].instrucciones[pos]=entrada; 
+      lista[ID].timer[pos]=timer.toInt();
+          
+      pos++;*/
+    } 
+    break;
+  case 4:
+    if(entrada==';'){
+      lista[ID].timer[pos] = timer.toInt();
+      pos++;
+      actual=3;
+      timer="";
+                
+    }
+    else{
+      timer+=entrada;  
+    }
+    break;
+  case 5:
+       
+    if(entrada=='F'){
+      int resultado=buscarRuta(nombre);
+      recorrerEleccion(resultado);
+      actual=0;
+      nombre=""; 
+      entraSwitch = false;
+    }
+    else{
+      nombre+=entrada;
+    }
+       
+    break;    
+     
+}
   
 }
 
@@ -390,6 +398,7 @@ int detectarColor(){
   digitalWrite(S2, HIGH);
   G = pulseIn(SOut, digitalRead(SOut) == HIGH ? LOW : HIGH);
 
+/*
   Serial.print("    ");
   Serial.print(R, DEC);
   Serial.print("    ");
@@ -397,13 +406,15 @@ int detectarColor(){
   Serial.print("    ");
   Serial.print(B, DEC);
   Serial.print("\n");
-
+*/
   // Si detecta color Rojo
-  if(R < B && G > B && R < 35){
+  if(R>38&&R<45){
+    // Serial.println("Rojo");
     return 1;
   }
   // Si detecta color Azul
-  else if(B < R && B < G && G < R){
+  else if(R>75&&R<80){
+    // Serial.println("Azul");
     return 2;
   }
   // Si detecta color Negro
@@ -412,6 +423,7 @@ int detectarColor(){
   }*/
   // Si no detecta ni uno
   else{
+    // Serial.println("Otro...");
     return 0;
   }
   
@@ -459,20 +471,21 @@ void loopAutomatico(){
   int colorDetectado = 0;  
 
   colorDetectado = detectarColor();
+  // Serial.println(colorDetectado);
 
   // Rojo
   if(colorDetectado == 1){
-    Serial.print("Rojo \n");
+    // Serial.print("Rojo \n");
     barrer(2000);
   }
   // Azul
   else if(colorDetectado == 2){
-    Serial.print("Azul \n");
+    // Serial.print("Azul \n");
     modoAutomatico = false;
   }
   // Negro
   else if(colorDetectado == 3){
-    Serial.print("Negro \n");
+    // Serial.print("Negro \n");
     retroceder(2000);
   }
   // Ninguno
@@ -482,14 +495,14 @@ void loopAutomatico(){
 
     obstaculo = detectarObstaculo();
 
-    Serial.print(obstaculo + "\n");
+    // Serial.print(obstaculo + "\n");
     
     if(obstaculo){
-      Serial.print("Detecto obstaculo \n");
+      // Serial.print("Detecto obstaculo \n");
       atras(2000);
       derecha(2000);
     }else{
-      Serial.print("No detecto obstaculo \n");
+      // Serial.print("No detecto obstaculo \n");
       adelante(1000);
     }
     
@@ -497,51 +510,45 @@ void loopAutomatico(){
 }
 
 void loopManual(){
-  Serial.print("Entro a loop manual \n");
+  int resultado;
+  char state;
+  // Serial.print("Entro a loop manual \n");
   /*
     Solo debe de detectar la accion que le envia el telefono y realizar el movimiento correspondiente
   */
   if(Serial.available()>0){
+    resultado = Serial.read();
     state = Serial.read();
+    Serial.println("Resultado: " + state);
+
+    if(!entraSwitch){
+      if(state == 0){
+        adelante(2000);
+      }else if(state == '1'){
+        atras(2000);
+      }else if(state == '2'){
+        derecha(2000);
+      }else if(state == '3'){
+        izquierda(2000);
+      }else if(state == '4'){
+        barrer(2000);
+      }else if(state == '5'){
+        for (int i = 0 ; i < EEPROM.length() ; i++) {
+          EEPROM.write(i, 0);
+        }
+      }else{
+        Serial.println("Entro a otras acciones");
+        entraSwitch = true;
+        otrasAcciones(state)
+      }
+    }else{
+      Serial.println("Entro a otras acciones");
+      Serial.println("Actual: " + actual);
+      otrasAcciones(state);
+    }
+    
   }
   
-  if(state == 0){
-    for(int i = 0;i<5;i++){
-      adelante(2000);
-    }
-  }else if(state == 1){
-    for(int i = 0;i<5;i++){
-      atras(2000);
-    }
-  }else if(state == 2){
-    for(int i = 0;i<5;i++){
-      derecha(2000);
-    }
-  }else if(state == 3){
-    for(int i = 0;i<5;i++){
-      izquierda(2000);
-    }
-  }else if(state == 4){
-    for(int i = 0;i<5;i++){
-      barrer(2000);
-    }
-  }else if(state == 5){
-    for(int i = 0;i<5;i++){
-      for (int i = 0 ; i < EEPROM.length() ; i++) {
-        EEPROM.write(i, 0);
-      }
-    }
-  }else if(state == 6){
-    for(int i = 0;i<5;i++){
-      // Guardar ruta en memoria
-    }
-  }else{
-
-    char entrada;
-    entrada=state;
-    otrasAcciones(entrada);
-    //Serial.println("Saber ni que pedo paso, state = " + state);
-  }
 }
 
 void setup() {
@@ -566,6 +573,10 @@ void setup() {
   // Setup inicio
   pinMode(INICIO, INPUT);
   digitalWrite(INICIO, LOW);
+
+  // Setup del boton inicio
+  /*pinMode(INICIO, INPUT);
+  digitalWrite(INICIO, LOW);*/
 
   // Setup para EEPROM
   inicializarArreglos();
