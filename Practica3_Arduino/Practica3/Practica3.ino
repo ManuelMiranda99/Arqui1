@@ -33,12 +33,9 @@
 #define MT2P1 11
 #define MT2P2 12
 
-// Motor Barrido
-#define MTBP1 13
-#define MTBP2 14
 
 // Boton manual
-#define INICIO 15
+#define INICIO 13
 
 // Elementos para el struct
  
@@ -68,7 +65,7 @@
  *      5 = LIMPIAR MEMORIA
  *      6 = GUARDAR MEMORIA
  */
-bool modoAutomatico = false;
+bool modoAutomatico = true;
 
 
 //Modo manual
@@ -323,48 +320,12 @@ void atras(int cDelay){
   digitalWrite(MT2P2, LOW);
 }
 
-void derecha(int cDelay){
-  // Encendido
-  digitalWrite(MT1P1, HIGH);
-  digitalWrite(MT1P2, LOW);
-  digitalWrite(MT2P1, LOW);
-  digitalWrite(MT2P2, LOW);
 
-  delay(cDelay);
-
-  // Apagado
-  digitalWrite(MT1P1, LOW);
-  digitalWrite(MT1P2, LOW);
-  digitalWrite(MT2P1, LOW);
-  digitalWrite(MT2P2, LOW);
-}
-
-void izquierda(int cDelay){
-  // Encendido
-  digitalWrite(MT1P1, LOW);
-  digitalWrite(MT1P2, LOW);
-  digitalWrite(MT2P1, HIGH);
-  digitalWrite(MT2P2, LOW);
-
-  delay(cDelay);
-
-  // Apagado
-  digitalWrite(MT1P1, LOW);
-  digitalWrite(MT1P2, LOW);
-  digitalWrite(MT2P1, LOW);
-  digitalWrite(MT2P2, LOW);
-}
 
 void barrer(int cDelay){
-  // Encendido
-  digitalWrite(MTBP1, HIGH);
-  digitalWrite(MTBP2, LOW);
 
-  delay(cDelay);
 
-  // Apagado
-  digitalWrite(MTBP1, LOW);
-  digitalWrite(MTBP2, LOW);
+
 }
 
 void retroceder(int cDelay){
@@ -380,6 +341,40 @@ void retroceder(int cDelay){
   digitalWrite(MT2P1, LOW);
   digitalWrite(MT2P2, LOW);
 }
+
+
+void derecha(int cDelay){
+  // Encendido
+  digitalWrite(MT1P1, HIGH);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, HIGH);
+
+  delay(cDelay);
+
+  // Apagado
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, LOW);
+}
+
+void izquierda(int cDelay){
+  // Encendido
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, HIGH);
+  digitalWrite(MT2P1, HIGH);
+  digitalWrite(MT2P2, LOW);
+
+  delay(cDelay);
+
+  // Apagado
+  digitalWrite(MT1P1, LOW);
+  digitalWrite(MT1P2, LOW);
+  digitalWrite(MT2P1, LOW);
+  digitalWrite(MT2P2, LOW);
+}
+
 
 /*
   --------------------Fin Movimiento--------------------
@@ -409,19 +404,19 @@ int detectarColor(){
   Serial.print("\n");
 
   // Si detecta color Rojo
-  if(R>38&&R<45){
-    // Serial.println("Rojo");
+  if(R>32&&R<60){
+    Serial.println("Rojo");
     return 1;
   }
   // Si detecta color Azul
-  else if(R>75&&R<80){
-    // Serial.println("Azul");
+  else if(R>70&&R<90){
+    Serial.println("Azul");
     return 2;
   }
   // Si detecta color Negro
-  /*else if(){
+  else if(R>95){
     return 3;
-  }*/
+  }
   // Si no detecta ni uno
   else{
     // Serial.println("Otro...");
@@ -487,7 +482,7 @@ void loopAutomatico(){
   // Negro
   else if(colorDetectado == 3){
     // Serial.print("Negro \n");
-    retroceder(2000);
+    retroceder(1000);
   }
   // Ninguno
   else{
@@ -500,8 +495,7 @@ void loopAutomatico(){
     
     if(obstaculo){
       // Serial.print("Detecto obstaculo \n");
-      atras(2000);
-      derecha(2000);
+      atras(1000);
     }else{
       // Serial.print("No detecto obstaculo \n");
       adelante(1000);
@@ -531,10 +525,9 @@ if(!entraSwitch){
       atras(2000);
     
   }else if(state == '2'){
-      derecha(2000);
-    
+     derecha(995);
   }else if(state == '3'){
-      izquierda(2000);
+      izquierda(1000);
   }else if(state == '4'){
       barrer(2000);
    
@@ -542,6 +535,15 @@ if(!entraSwitch){
     for (int i = 0 ; i < EEPROM.length() ; i++) {
       EEPROM.write(i, 0);
     }
+    
+   for (int i = 0 ; i < SIZEROUTES ; ++i) {
+         for(int k=0;k<STEPSIZE;k++){
+         lista[i].nombre[k]=' ';
+         lista[i].instrucciones[k]='X';
+         lista[i].timer[k]=0;
+        }
+    }
+    
   }else if(state == '6'){
     for(int i = 0;i<5;i++){
       // Guardar ruta en memoria
@@ -586,9 +588,6 @@ void setup() {
   pinMode(INICIO, INPUT);
   digitalWrite(INICIO, LOW);
 
-  // Setup del boton inicio
-  /*pinMode(INICIO, INPUT);
-  digitalWrite(INICIO, LOW);*/
 
   // Setup para EEPROM
   inicializarArreglos();
@@ -598,9 +597,11 @@ void setup() {
 
 void loop() {
 
-  /*if(digitalRead(INICIO == HIGH)){
+  if(digitalRead(INICIO)==HIGH){
     modoAutomatico = !modoAutomatico;
-  }*/
+    delay(1000);
+  }
+
 
   if(modoAutomatico){
     
