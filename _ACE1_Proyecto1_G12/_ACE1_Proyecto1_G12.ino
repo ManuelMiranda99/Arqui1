@@ -1,14 +1,160 @@
-void setup() {
-  Serial.begin(9600);
+/*
+  ------------------------------Librerias a usar---------------------------------
+*/
+
+
+
+/*
+  ------------------------------Fin de librerias---------------------------------
+*/
+
+/*
+  ------------------------------Pines usados-------------------------------------
+*/
+
+// Pin de la bocina
+//#define BOCINA 
+
+// Pines de movimiento
+  // Movimiento en X
+//#define XPOS
+//#define XNEG
+  // Movimiento en Y
+//#define YPOS
+//#define YNEG
+
+/*
+  ------------------------------Fin de pines usados-------------------------------
+*/
+
+/*
+  ------------------------------Variables a utilizar------------------------------
+*/
+
+int cCoin = 0;
+int xPos = 0, yPos = 0;
+boolean bLoopMecanico = false;
+boolean bLoopApp = false;
+
+/*
+  ------------------------------Fin de variables----------------------------------
+*/
+
+void detectarMoneda(){
+  /*
+    Si detecta una moneda de 25c sumarle 25 a cCoin
+    Si detecta una moneda de 50c sumarle 50 a cCoin
+    Si detecta una moneda de 1Q sumarle 100 a cCoin
+  */
+
+  // Se envia a la aplicacion el valor de cCoin
+  Serial.println(cCoin);
 }
 
-void loop() {
+void loopMecanico(){
   
 }
 
+void loopApp(){
+  if(Serial.available()>0){
+    int result = Serial.read();
+
+    // +X
+    if(result == 0){
+      
+    }
+    // -X
+    else if(result == 1){
+      
+    }
+    // +Y
+    else if(result == 2){
+      
+    }
+    // -Y
+    else if(result == 3){
+      
+    }
+    // Bajar garra
+    else if(result == 4){
+      
+    }
+    // Soltar garra
+    else if(result == 5){
+      
+    }
+    
+  }
+}
+
+// Setea las variables de inicio a sus valores originales
+void fin(){
+  bLoopMecanico = false;
+  bLoopApp = false;
+  cCoin = 0;
+}
+
+// Metodo para limpiar la matriz
+void pintarMatriz(){
+  
+}
+
+void setup() {
+  
+  Serial.begin(9600);
+  
+  // Setup de bocina
+  pinMode(BOCINA, OUTPUT);
+
+  // Inicializacion de bocina
+  digitalWrite(BOCINA, LOW);
+}
+
+void loop() {
+
+  pintarMatriz();
+
+  if(bLoopMecanico){
+    loopMecanico();
+  }
+  
+  if(bLoopApp){
+    loopApp();
+  }
+
+  if(!bLoopMecanico && !bLoopApp){
+    
+    detectarMoneda();
+    
+    // Si ingreso la cantidad adecuada de monedas
+    if(cCoin == 100){
+
+      Serial.print("1");
+      digitalWrite(BOCINA, HIGH);
+      delay(1500);
+      digitalWrite(BOCINA, LOW);
+      
+      // Ver la señal que envia la App al arduino
+      if(Serial.available()>0){
+        int result = Serial.read();
+  
+        
+        // Si ingreso al modo mecanico
+        if(result == 0){
+          bLoopMecanico = true;
+        }
+        
+        // Si ingreso al modo aplicacion
+        else if(result == 1){
+          bLoopApp = true;
+        }
+        
+      }
+    }
+  }
+}
+
 /*
-
-
             Botones necesarios para el funcionamiento de la maquina
 - Boton para movimiento X+
 - Boton para movimiento X-
