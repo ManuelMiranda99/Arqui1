@@ -22,6 +22,10 @@
   // Movimiento en Y
 //#define YPOS
 //#define YNEG
+  // Movimiento en Z
+//#define Z
+  // Soltar garra
+//#define G  
 
 /*
   ------------------------------Fin de pines usados-------------------------------
@@ -35,6 +39,7 @@ int cCoin = 0;
 int xPos = 0, yPos = 0;
 boolean bLoopMecanico = false;
 boolean bLoopApp = false;
+boolean peluche = false;
 
 /*
   ------------------------------Fin de variables----------------------------------
@@ -51,8 +56,77 @@ void detectarMoneda(){
   Serial.println(cCoin);
 }
 
-void loopMecanico(){
+void xPos(){
   
+}
+
+void xNeg(){
+  
+}
+
+void yPos(){
+  
+}
+
+void yNeg(){
+  
+}
+
+boolean zMov(){
+  
+}
+
+void Garrra(){
+  
+}
+
+void detectarPeluche(){
+  
+}
+
+void loopMecanico(){
+  // +X
+  if(digitalRead(XPOS)==HIGH){
+    xPos();
+  }
+  // -X
+  else if(digitalRead(XNEG)==HIGH){
+    xNeg();
+  }
+  // +Y
+  else if(digitalRead(YPOS)==HIGH){
+    yPos();
+  }
+  // -Y
+  else if(digitalRead(YNEG)==HIGH){
+    yNeg();
+  }
+  // Z
+  else if(digitalRead(Z)==HIGH){
+    // Guardo en la variable peluche si agarro o no el peluche
+    peluche = zMov();
+
+    if(peluche){
+      pintarMatriz('T');
+    }else{
+      pintarMatriz('L');
+
+      regresarPos();
+
+      Serial.print("GAME OVER");
+
+      fin();
+      
+    }
+    
+  }
+  // Soltar garra
+  else if(digitalRead(G)==HIGH){
+    Garra();
+
+    detectarPeluche();
+    
+  }
 }
 
 void loopApp(){
@@ -61,42 +135,71 @@ void loopApp(){
 
     // +X
     if(result == 0){
-      
+      xPos();
     }
     // -X
     else if(result == 1){
-      
+      xNeg();
     }
     // +Y
     else if(result == 2){
-      
+      yPos();
     }
     // -Y
     else if(result == 3){
-      
+      yNeg();
     }
     // Bajar garra
     else if(result == 4){
+      // Guardo en la variable peluche si agarro o no el peluche
+      peluche = zMov();
+
+      if(peluche){
+        pintarMatriz('T');
+      }else{
+        pintarMatriz('L');
+
+        regresarPos();
+
+        Serial.print("GAME OVER");
+
+        fin();
+        
+      }
       
     }
     // Soltar garra
     else if(result == 5){
+      Garra();
+
+      detectarPeluche();
       
     }
-    
   }
 }
 
 // Setea las variables de inicio a sus valores originales
 void fin(){
+  peluche = false;
   bLoopMecanico = false;
   bLoopApp = false;
   cCoin = 0;
 }
 
 // Metodo para limpiar la matriz
-void pintarMatriz(){
-  
+void pintarMatriz(char _c){
+  // Pintar matriz de forma normal
+  if(_c == 'N'){
+    
+  }
+  // Pintar matriz y dejarla titiritando la posicion correcta
+  else if(_c == 'T'){
+    
+  }
+  // Sin tomar el peluche
+  else if(_c == 'L'){
+    
+  }
 }
 
 void setup() {
@@ -112,7 +215,7 @@ void setup() {
 
 void loop() {
 
-  pintarMatriz();
+  pintarMatriz('N');
 
   if(bLoopMecanico){
     loopMecanico();
