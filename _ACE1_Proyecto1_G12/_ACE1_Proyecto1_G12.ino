@@ -40,8 +40,8 @@ Servo servo;
   // Soltar garra (Servo)
 #define GARRA 39
   //Pines del contador de fichas
-#define QUETZAL A3
-#define CINCUENTA A5
+#define QUETZAL A5
+#define CINCUENTA A3
 #define VEINTICINCO A4
 
 /*
@@ -161,14 +161,14 @@ void apagarPos(int x, int y){
 }
 
 byte triste[8][8]={  
-     { 0,0,0,0,0,0,0,0 },    // 0
-     { 0,0,1,0,0,1,0,0 },    // 1
-     { 0,0,1,0,0,1,0,0 },
-     { 0,0,1,0,0,1,0,0 },
-     { 0,0,0,0,0,0,0,0 },
+     { 1,0,0,0,0,0,0,1 },    // 0
+     { 0,1,1,0,0,1,1,0 },    // 1
      { 0,0,0,1,1,0,0,0 },
-     { 0,1,1,0,0,1,1,0 },
-     { 1,0,0,0,0,0,0,1 },
+     { 0,0,0,0,0,0,0,0 },
+     { 0,0,0,0,0,0,0,0 },
+     { 0,0,1,0,0,1,0,0 },
+     { 0,0,1,0,0,1,0,0 },
+     { 0,0,1,0,0,1,0,0 },
  };
 // Pintar cara triste en matriz de leds cuando pierda el jugador
 void caraTriste(){
@@ -182,13 +182,34 @@ void caraTriste(){
   pintarLed();
 }
 
+byte feliz[8][8]={  
+     { 0,0,0,1,1,0,0,0 },    // 0
+     { 0,0,1,0,0,1,0,0 },    // 1
+     { 0,1,0,0,0,0,1,0 },
+     { 1,0,0,0,0,0,0,1 },
+     { 0,0,0,0,0,0,0,0 },
+     { 0,0,1,0,0,1,0,0 },
+     { 0,0,1,0,0,1,0,0 },
+     { 0,0,1,0,0,1,0,0 },
+ };
+void caraFeliz(){
+  
+  for(int i=0;i<8;i++){
+    for(int j=0;j<8;j++){
+      tablero[i][j] = feliz[i][j];
+    }
+  }
+
+  pintarLed();
+}
+
 // Funcion que detecta la moneda ingresada
 void detectarMoneda(){
 
   // Se guarda en variables los valores que sacan los sensores
-  int Quetzal = analogRead(QUETZAL);
-  int Cincuenta = analogRead(CINCUENTA);
-  int Venticinco = analogRead(VEINTICINCO);
+  int Quetzal = analogRead(A5);
+  int Cincuenta = analogRead(A3);
+  int Venticinco = analogRead(A4);
 
   // Ingreso ficha de quetzal
   if(Quetzal > 1000){
@@ -247,14 +268,16 @@ void yNeg(){
 }
 
 boolean zMov(){
-  // Bajar la garra
-  digitalWrite(ZPOS, HIGH);
-  digitalWrite(ZNEG, LOW);
-  delay(1000);
-  // Parar la garra
-  digitalWrite(ZPOS, LOW);
-  digitalWrite(ZNEG, LOW);
-
+  for(int i=0;i<3;i++){
+    // Bajar la garra
+    digitalWrite(ZPOS, LOW);
+    digitalWrite(ZNEG, HIGH);
+    delay(55);
+    // Parar la garra
+    digitalWrite(ZPOS, LOW);
+    digitalWrite(ZNEG, LOW);
+    delay(500);
+  }
   /*Agarre de la garra*/
   bool agarro = true;
 
@@ -272,13 +295,16 @@ boolean zMov(){
   }else{
     agarro = false;
   }
-  
-  // Subir la garra
-  digitalWrite(ZPOS, LOW);
-  digitalWrite(ZNEG, HIGH);
-  delay(1000);
-  digitalWrite(ZPOS, LOW);
-  digitalWrite(ZNEG, LOW);
+
+  for(int i=0;i<10;i++){
+    // Subir la garra
+    digitalWrite(ZPOS, HIGH);
+    digitalWrite(ZNEG, LOW);
+    delay(80);
+    digitalWrite(ZPOS, LOW);
+    digitalWrite(ZNEG, LOW);
+    delay(500);
+  }
 
   return agarro;
 }
@@ -367,23 +393,7 @@ void loopMecanico(){
   else if(digitalRead(Z)==HIGH && noBajo){
     noBajo = false;
     // Guardo en la variable peluche si agarro o no el peluche. ZMov es el movimiento automatico de bajar la garra y agarrar un peluche
-    peluche = zMov();
-
-    if(peluche){
-      
-      // Agarro el peluche, tirititar la matriz
-
-    }else{
-      
-      // No agarro el peluche, perdio. Pintar carita triste y regresar a posicion inicial
-
-      regresarPos();
-
-      // Mensaje a la aplicacion
-      Serial.print("GAME OVER");
-
-      fin();
-    }    
+    peluche = zMov();        
   }
   // Soltar garra
   else if(digitalRead(G)==HIGH && !noBajo){
@@ -394,8 +404,10 @@ void loopMecanico(){
     delay(200);
     if(estado=true){
       Serial.print(1); 
+      caraFeliz();
     }else{
       Serial.print(0);
+      caraTriste();
     }
   }
 }
@@ -426,25 +438,7 @@ void loopApp(){
     else if(result == 4 && noBajo){
       noBajo = false;
       // Guardo en la variable peluche si agarro o no el peluche
-      peluche = zMov();
-  
-      if(peluche){
-      
-        // Agarro el peluche, tirititar la matriz
-
-      }else{
-        
-        // No agarro el peluche, perdio. Pintar carita triste y regresar a posicion inicial
-  
-  
-        regresarPos();
-
-        // Mensaje enviado a la aplicacion
-        Serial.print("GAME OVER");
-  
-        fin();
-        
-      }
+      peluche = zMov();  
       
     }
     // Soltar garra
@@ -456,8 +450,10 @@ void loopApp(){
       delay(200);
       if(estado=true){
         Serial.print(1); 
+        caraFeliz();
       }else{
         Serial.print(0);
+        caraTriste();
       }
     }
   }
@@ -516,14 +512,9 @@ void setup() {
 
 void loop() {
 
-  // Banderas para decidir a que loop entrar
-  bLoopMecanico=true;
-  bLoopApp=false;
-
   // Si la bandera de loop mecanico esta prendida, entrar a loopMecanico
   if(bLoopMecanico){
     loopMecanico();
-    delay(100);
   }
 
   // Si la bandera de loop app esta prendida, entrar a loopApp
@@ -537,22 +528,22 @@ void loop() {
     detectarMoneda();
     
     // Si ingreso la cantidad adecuada de monedas
-    if(cCoin == 100){
-      cCoin=0;
+    if(cCoin >= 100){
+      //cCoin=0;
       bocina();
-      
+      delay(100);
       // Ver la señal que envia la App al arduino para decidir el tipo de manejo de maquina
       if(Serial.available()>0){
-        int result = Serial.read();
+        char result = Serial.read();
   
         
         // Si ingreso al modo mecanico
-        if(result == 0){
+        if(result == '0'){
           bLoopMecanico = true;
         }
         
         // Si ingreso al modo aplicacion
-        else if(result == 1){
+        else if(result == '1'){
           bLoopApp = true;
         }
         
