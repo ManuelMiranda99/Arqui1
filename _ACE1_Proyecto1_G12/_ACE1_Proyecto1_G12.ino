@@ -53,10 +53,12 @@ Servo servo;
 */
 
 int cCoin = 0;
-int x = 0, y = 0;
+int x = 1, y = 6;
+// Banderas
 boolean bLoopMecanico = false;
 boolean bLoopApp = false;
 boolean peluche = false;
+boolean monedasIngresadas = false;
 
 const int fila[8] = {
   22, 32, 31, 28, 45, 33, 43, 37
@@ -66,14 +68,14 @@ const int columna[8] = {
 };
 
 byte tablero[8][8] =
-  {  { 1,0,0,0,0,0,0,0 },    // 0
+  {  { 0,0,0,0,0,0,0,0 },    // 0
      { 0,0,0,0,0,0,0,0 },    // 1
      { 0,0,0,0,0,0,0,0 },
      { 0,0,0,0,0,0,0,0 },
      { 0,0,0,0,0,0,0,0 },
      { 0,0,0,0,0,0,0,0 },
      { 0,0,0,0,0,0,0,0 },
-     { 0,0,0,0,0,0,0,0 },
+     { 1,0,0,0,0,0,0,0 },
  };
 
 // Musica
@@ -110,7 +112,8 @@ void nota(float frec, float t){
 
 // Cancion para despues de ingresar notas correctas
 void bocina(){
-  nota(f[3], 250);          
+  nota(d[3], 100);
+  /*nota(f[3], 250);          
   nota(a[3], 250); 
   nota(b[3], 500);
   
@@ -134,7 +137,7 @@ void bocina(){
   nota(d[3], 250);
   nota(e[3],250);
   nota(g[3], 250);
-  nota(e[3],500);
+  nota(e[3],500);*/
   noTone(BOCINA);
 }
 
@@ -152,12 +155,12 @@ void pintarLed(){
 
 // Encender una posicion especifica en la matriz de LEDs
 void encenderPos(int x, int y){
-  tablero[x][y]=1;
+  tablero[y][x]=1;
 }
 
 // Apagar una posicion especifica en la matriz de LEDs
 void apagarPos(int x, int y){
-  tablero[x][y]=0;
+  tablero[y][x]=0;
 }
 
 byte triste[8][8]={  
@@ -210,23 +213,26 @@ void detectarMoneda(){
   int Quetzal = analogRead(A5);
   int Cincuenta = analogRead(A3);
   int Venticinco = analogRead(A4);
-
+  
   // Ingreso ficha de quetzal
-  if(Quetzal > 1000){
+  if(Quetzal > 900){
     cCoin+=100; 
     Serial.print(100);
+    delay(350);
   }
 
   // Ingreso ficha de cincuenta
-  if(Cincuenta > 1000){
+  if(Cincuenta > 900){
     cCoin+=50; 
     Serial.print(50);
+    delay(350);
   }
 
   // Ingreso ficha de venticinco
-  if(Venticinco > 1000){
+  if(Venticinco > 900){
     cCoin+=25; 
     Serial.print(25);
+    delay(350);
   }
   
 }
@@ -346,6 +352,7 @@ void fin(){
   bLoopMecanico = false;
   bLoopApp = false;
   noBajo = true;
+  monedasIngresadas = false;
   cCoin = 0;
 }
 
@@ -379,14 +386,14 @@ void loopMecanico(){
   }
   // +Y
   else if(Y > 800 && Y <= 1023){
-    if(y>0){
-      yPos();
+    if(y<7){
+      yNeg();
     }
   }
   // -Y
   else if(Y >= 0 && Y < 200){
-    if(y<7){
-      yNeg();
+    if(y>0){
+      yPos();
     }
   }
   // Z
@@ -403,6 +410,7 @@ void loopMecanico(){
     bool estado=detectarPeluche();
     delay(200);
     if(estado=true){
+      // 
       Serial.print(1); 
       caraFeliz();
     }else{
@@ -412,37 +420,38 @@ void loopMecanico(){
   }
 }
 
-
-
 void loopApp(){
+  pintarLed();
   if(Serial.available()>0){
-    int result = Serial.read();
+    char result = Serial.read();
+
+    Serial.println(result);
 
     // +X
-    if(result == 0){
+    if(result == '0'){
       xPos();
     }
     // -X
-    else if(result == 1){
+    else if(result == '1'){
       xNeg();
     }
     // +Y
-    else if(result == 2){
+    else if(result == '2'){
       yPos();
     }
     // -Y
-    else if(result == 3){
+    else if(result == '3'){
       yNeg();
     }
     // Bajar garra
-    else if(result == 4 && noBajo){
+    else if(result == '4' && noBajo){
       noBajo = false;
       // Guardo en la variable peluche si agarro o no el peluche
       peluche = zMov();  
       
     }
     // Soltar garra
-    else if(result == 5 && !noBajo){
+    else if(result == '5' && !noBajo){
       
       Garra();
 
@@ -512,6 +521,7 @@ void setup() {
 
 void loop() {
 
+  bLoopMecanico = true;
   // Si la bandera de loop mecanico esta prendida, entrar a loopMecanico
   if(bLoopMecanico){
     loopMecanico();
@@ -522,32 +532,39 @@ void loop() {
     loopApp();
   }
 
+  if(monedasIngresadas){
+    // Ver la señal que envia la App al arduino para decidir el tipo de manejo de maquina
+    if(Serial.available()>0){
+      char result = Serial.read();
+      
+      // Si ingreso al modo mecanico
+      if(result == '0'){
+        bLoopMecanico = true;
+        monedasIngresadas = false;
+      }
+      
+      // Si ingreso al modo aplicacion
+      else if(result == '1'){
+        bLoopApp = true;
+        monedasIngresadas = false;
+      }
+      
+    }
+    
+  }
+
   // Si ninguna de las banderas esta activa, entrar a detectar monedas
-  if(!bLoopMecanico && !bLoopApp){
+  if(!bLoopMecanico && !bLoopApp && !monedasIngresadas){
     
-    detectarMoneda();
-    
+    detectarMoneda();    
+
     // Si ingreso la cantidad adecuada de monedas
     if(cCoin >= 100){
-      //cCoin=0;
+      cCoin = 0;
+      // Cambio a bandera monedasIngresadas a verdadero
+      monedasIngresadas = true;
       bocina();
       delay(100);
-      // Ver la señal que envia la App al arduino para decidir el tipo de manejo de maquina
-      if(Serial.available()>0){
-        char result = Serial.read();
-  
-        
-        // Si ingreso al modo mecanico
-        if(result == '0'){
-          bLoopMecanico = true;
-        }
-        
-        // Si ingreso al modo aplicacion
-        else if(result == '1'){
-          bLoopApp = true;
-        }
-        
-      }
     }
   }
 }
